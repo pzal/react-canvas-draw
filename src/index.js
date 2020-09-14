@@ -90,6 +90,9 @@ export default class extends PureComponent {
 
     this.catenary = new Catenary();
 
+    this.containerWidth = null
+    this.containerHeight = null
+
     this.points = [];
     this.lines = [];
 
@@ -129,6 +132,10 @@ export default class extends PureComponent {
         { x: initX + this.chainLength / 4, y: initY },
         { both: false }
       );
+      
+      this.containerWidth = this.canvasContainer.offsetWidth
+      this.containerHeight = this.canvasContainer.offsetHeight
+      
       this.mouseHasMoved = true;
       this.valuesChanged = true;
       this.clear();
@@ -327,6 +334,10 @@ export default class extends PureComponent {
       this.drawImage();
       this.loop({ once: true });
     }
+    
+    this.containerWidth = this.canvasContainer.offsetWidth
+    this.containerHeight = this.canvasContainer.offsetHeight
+    
     this.loadSaveData(saveData, true);
   };
 
@@ -357,6 +368,24 @@ export default class extends PureComponent {
     };
   };
 
+  absolutePointToRelative (point) {
+    if (!point) {
+      return point
+    }
+    
+    const {x, y} = point
+    return {...point, x: x / this.containerWidth, y: y / this.containerHeight}
+  }
+  
+  relativePointToAbsolute (point) {
+    if (!point) {
+      return point
+    }
+    
+    const {x, y} = point
+    return {...point, x: x * this.containerWidth, y: y * this.containerHeight}
+  }
+  
   handlePointerMove = (x, y) => {
     if (this.props.disabled) return;
 
@@ -369,12 +398,12 @@ export default class extends PureComponent {
     ) {
       // Start drawing and add point
       this.isDrawing = true;
-      this.points.push(this.lazy.brush.toObject());
+      this.points.push(this.absolutePointToRelative(this.lazy.brush.toObject()));
     }
 
     if (this.isDrawing) {
       // Add new point
-      this.points.push(this.lazy.brush.toObject());
+      this.points.push(this.absolutePointToRelative(this.lazy.brush.toObject()));
 
       // Draw current points
       this.drawPoints({
@@ -400,8 +429,8 @@ export default class extends PureComponent {
     );
     this.ctx.temp.lineWidth = brushRadius * 2;
 
-    let p1 = points[0];
-    let p2 = points[1];
+    let p1 = this.relativePointToAbsolute(points[0]);
+    let p2 = this.relativePointToAbsolute(points[1]);
 
     this.ctx.temp.moveTo(p2.x, p2.y);
     this.ctx.temp.beginPath();
@@ -411,8 +440,8 @@ export default class extends PureComponent {
       // end point and p1 as our control point
       var midPoint = midPointBtw(p1, p2);
       this.ctx.temp.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y);
-      p1 = points[i];
-      p2 = points[i + 1];
+      p1 = this.relativePointToAbsolute(points[i]);
+      p2 = this.relativePointToAbsolute(points[i + 1]);
     }
     // Draw last line as a straight line while
     // we wait for the next point to be able to calculate

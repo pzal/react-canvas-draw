@@ -38,3 +38,19 @@ p {
 input[type=number] {
   width: 50px;
 }
+
+.CustomParent {
+  height: 50vh;
+  width: 50vw;
+}
+
+.CustomParent canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.CustomParent div {
+  position: relative;
+  width: 100% !important;
+  height: 100% !important;
+}
